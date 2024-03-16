@@ -13,7 +13,7 @@ struct PCB_s {
 int Create (int priority);
 int Fork (void);
 bool Kill (int pid);
-//Exit, use 
+//Exit (void); 
 //Quantum
 //Send
 //Receive
