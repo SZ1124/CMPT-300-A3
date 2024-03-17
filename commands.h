@@ -3,12 +3,21 @@
 
 #include <stdbool.h>
 
+#define BUFFER_SIZE 256
+enum state {
+    RUNNING,
+    READY,
+    BLOCKED
+};
+
 typedef struct PCB_s PCB;
 struct PCB_s {
     int pid;
-    int priority;
-    char state [5];
+    int priority; //0,1,2
+    enum state;
+    char message[BUFFER_SIZE];
 };
+
 
 int Create (int priority);
 int Fork (void);
