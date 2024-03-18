@@ -2,8 +2,19 @@
 #define COMMANDS_H
 
 #include <stdbool.h>
+#include "list.h"
 
 #define BUFFER_SIZE 256
+
+List* priorityQ0;
+List* priorityQ1;
+List* priorityQ2;
+
+List* waitSend;
+List* waitReceive;
+
+
+//global var
 enum state {
     RUNNING,
     READY,
