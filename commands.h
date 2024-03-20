@@ -6,14 +6,6 @@
 
 #define BUFFER_SIZE 256
 
-List* priorityQ0;
-List* priorityQ1;
-List* priorityQ2;
-
-List* waitSend;
-List* waitReceive;
-
-
 //global var
 enum state {
     RUNNING,
@@ -29,11 +21,11 @@ struct PCB_s {
     char message[BUFFER_SIZE];
 };
 
-
+bool CreateInit(); //Called at the start of main.c
 int Create (int priority);
 int Fork (void);
 bool Kill (int pid);
-//Exit (void); 
+void Exit (void)
 //Quantum
 //Send
 //Receive
