@@ -117,9 +117,9 @@ int Fork (void)
 
 
 //Helper functions for List_search
-bool checkState(enum state, void* pComparisonArg)
+bool checkState(void* state, void* pComparisonArg)
 {
-    if(state==pComparisonArg)
+    if(temp==pComparisonArg)
     {
         return 1;
     }
@@ -128,22 +128,25 @@ bool checkState(enum state, void* pComparisonArg)
 }
 bool allBlocked()
 {
-    if(List_search(priorityQ0, checkState, READY) || List_search(priorityQ0, checkState, RUNNING))
+    State ready=READY;
+    State running=RUNNING;
+    
+    if(List_search(priorityQ0, checkState, &ready) || List_search(priorityQ0, checkState, &running))
     {
         return false;
     }
-    else if(List_search(priorityQ1, checkState, READY) || List_search(priorityQ1, checkState, RUNNING))
+    else if(List_search(priorityQ1, checkState, &ready) || List_search(priorityQ1, checkState, &running))
     {
         return false;
     }
-    else if(List_search(priorityQ2, checkState, READY) || List_search(priorityQ2, checkState, RUNNING))
+    else if(List_search(priorityQ2, checkState, &ready) || List_search(priorityQ2, checkState, &running))
     {
         return false;
     }
 
     return true;
 }
-bool checkPid(int pid, void* pComparisonArg)
+bool checkPid(void* pid, void* pComparisonArg)
 {
     if(pid==pComparisonArg)
     {
@@ -182,17 +185,17 @@ bool Kill (int pid)
         return true;
     }
     //Search ready Q's to find the corresponding pid
-    else if(List_search(priorityQ0, checkPid, pid))
+    else if(List_search(priorityQ0, checkPid, &pid))
     {
         List_remove(priorityQ0);
         return true;
     }
-    else if(List_search(priorityQ1, checkPid, pid))
+    else if(List_search(priorityQ1, checkPid, &pid))
     {
         List_remove(priorityQ1);
         return true;
     }
-    else if(List_search(priorityQ2, checkPid, pid))
+    else if(List_search(priorityQ2, checkPid, &pid))
     {
         List_remove(priorityQ2);
         return true;

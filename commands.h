@@ -7,7 +7,7 @@
 #define BUFFER_SIZE 256
 
 //global var
-enum state {
+enum State {
     RUNNING,
     READY,
     BLOCKED
@@ -17,7 +17,7 @@ typedef struct PCB_s PCB;
 struct PCB_s {
     int pid;
     int priority; //0,1,2
-    enum state;
+    enum State state;
     char message[BUFFER_SIZE];
 };
 
