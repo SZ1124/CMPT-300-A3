@@ -1,101 +1,128 @@
 
 #include "commands.h"
 #include <stdio.h>
+#include <string.h>
 
 int main() {
-    char command;
     printf("Welcome to the OS sim!\n");
+
+    char input[100];
+    char command;
+    int first_arg;
+    int second_arg;
+    char msg[100];
+
     while(1){
-        printf("Enter a command: ");
-        scanf("%c", &command);
+        printf("$ ");
+        fgets(input, sizeof(input), stdin);
+        input[strcspn(input, "\n")] = 0;
+
+        if (sscanf(input, "%c", &command) != 1) {
+            printf("Invalid input format\n");
+            return 1;
+        }
+
+
         switch(command){
             case 'C':
-                int priority;
-                printf("Enter the priority of the new process: ");
-                scanf("%d", &priority);
-                Create(priority);
+                if (sscanf(input, "%*c %d", &first_arg) != 1) {
+                    printf("Invalid input format for command 'I'\n");
+                    return 1;
+                }
+                printf("Priority for Create: %d\n", first_arg);
+                Create(first_arg);
                 break;
             
             case 'F':
+                printf("Forking...\n");
                 Fork();
                 break;
 
             case 'K':
-                int pid;
-                printf("Enter the pid of the process you are trying to kill: ");
-                scanf("%d", &pid);
-                Kill(pid);
+                if (sscanf(input, "%*c %d", &first_arg) != 1) {
+                    printf("Invalid input format for command 'I'\n");
+                    return 1;
+                }
+                printf("PID to kill: %d\n", first_arg);
+                Kill(first_arg);
                 break;
 
             case 'E':
+                printf("Exiting...\n");
                 Exit();
                 break;
             
             case 'Q':
+                printf("Quantum...\n");
                 Quantum();
                 break;
             
             case 'S':
-                int pid;
-                char str[100];
-                printf("Enter the pid of the receiving process: ");
-                scanf("%d", &pid);
-                printf("Enter the message you are trying to send: ");
-                scanf("%s", str);
-                Send(pid, str);
+                if (sscanf(input, "%*c %d %[^\n]", &first_arg, msg) != 2) {
+                    printf("Invalid input format for command 'S'\n");
+                    return 1;
+                }
+                printf("PID: %d, Message: %s\n", first_arg, msg);
+                Send(first_arg, msg);
                 break;
             
             case 'R':
+                printf("Receiving...\n");
                 Receive();
                 break;
             
             case 'Y':
-                int pid;
-                char str[100];
-                printf("Enter the pid of the receiving process: ");
-                scanf("%d", &pid);
-                printf("Enter the message you are trying to send: ");
-                scanf("%s", str)
-                Reply(pid, str);
+                if (sscanf(input, "%*c %d %[^\n]", &first_arg, msg) != 2) {
+                    printf("Invalid input format for command 'S'\n");
+                    return 1;
+                }
+                printf("PID: %d, Message: %s\n", first_arg, msg);
+                Reply(first_arg, msg);
                 break;
             
             case 'N':
-                int semaphore;
-                int initVal;
-                printf("Enter the semaphore id: ");
-                scanf("%d", &semaphore);
-                printf("Enter the initial value of the semaphore: ");
-                scanf("%d", &initVal);
-                NewSemaphore(semaphore, initVal);
+                if (sscanf(input, "%*c %d %d", &first_arg, &second_arg) != 2) {
+                    printf("Invalid input format for command 'V'\n");
+                    return 1;
+                }
+                printf("Semaphore: %d, Initial value: %d\n", first_arg, second_arg);
+                NewSemaphore(first_arg, second_arg);
                 break;
             
             case 'P':
-                int semaphore;
-                printf("Enter the semaphore id: ");
-                scanf("%d", &semaphore);
-                SemaphoreP(semaphore);
+                if (sscanf(input, "%*c %d", &first_arg) != 1) {
+                    printf("Invalid input format for command 'I'\n");
+                    return 1;
+                }
+                printf("Semaphore: %d\n", first_arg);
+                SemaphoreP(first_arg);
                 break;
             
             case 'V':
-                int semaphore;
-                printf("Enter the semaphore id: ");
-                scanf("%d", &semaphore);
-                SemaphoreV(semaphore);
+                if (sscanf(input, "%*c %d", &first_arg) != 1) {
+                    printf("Invalid input format for command 'I'\n");
+                    return 1;
+                }
+                printf("Semaphore: %d\n", first_arg);
+                SemaphoreV(first_arg);
                 break;
 
             case 'I':
-                int pid;
-                printf("Enter the pid of the process you are trying to know: ");
-                scanf("%d", &pid);
-                Procinfo(pid);
+                if (sscanf(input, "%*c %d", &first_arg) != 1) {
+                    printf("Invalid input format for command 'I'\n");
+                    return 1;
+                }
+                printf("PID: %d\n", first_arg);
+                Procinfo(first_arg);
                 break;
 
             case 'T':
+                printf("Total info...\n");
                 Totalinfo();
                 break;
 
             default:
-                printf("Invalid grade entered.\n");
+                printf("Invalid command entered.\n");
         }
     }
     
