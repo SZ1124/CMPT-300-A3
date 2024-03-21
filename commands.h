@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include "list.h"
 
-#define BUFFER_SIZE 256
+#define BUFFER_SIZE 40
 
 //global var
 enum State {
@@ -21,18 +21,25 @@ struct PCB_s {
     char message[BUFFER_SIZE];
 };
 
+typedef struct SEM_s sem;
+struct SEM_s {
+    int value;
+    int semaphoreID;
+    List* waitingList;
+};
+
 bool CreateInit(); //Called at the start of main.c
 int Create (int priority);
 int Fork (void);
 bool Kill (int pid);
-void Exit (void)
-//Quantum
-//Send
-//Receive
+void Exit (void);
+void Quantum (void);
+void Send(int pid, char* msg); // return type uncertain
+void Receive (void); //return type uncertain
 bool Reply (int pid, char* msg);
-bool NewSemaphore (int semaphore, int init_val);
-bool SemaphoreP (int semaphore);
-bool SemaphoreV (int semaphore);
+bool NewSemaphore (int semaphoreID, int init_val);
+bool SemaphoreP (int semaphoreID);
+bool SemaphoreV (int semaphoreID);
 void Procinfo (int pid);
 void Totalinfo (void);
 
