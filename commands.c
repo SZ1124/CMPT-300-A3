@@ -8,16 +8,15 @@
 static List* priorityQ0;
 static List* priorityQ1;
 static List* priorityQ2;
-
 static List* waitSend;
 static List* waitReceive;
+static List* semaphoreList;
 
 static int idNum=1;
 
 static PCB* init;
 static PCB* runningProcess;
 
-List* semaphoreList;
 
 void CreateInit()
 {
@@ -30,9 +29,16 @@ void CreateInit()
     return;
 }
 
-void initSemaphoreList()
+void CreateQs()
 {
+    priorityQ0 = List_create();
+    priorityQ1 = List_create();
+    priorityQ2 = List_create();
+    waitSend = List_create();
+    waitReceive = List_create();
     semaphoreList = List_create();
+
+    return;
 }
 
 
@@ -60,6 +66,7 @@ int Create (int priority);
 
     if(successOrFailure == 0)
     {   
+        //increment pid for the next process
         idNum += 1;
         return newProcess->pid;
     }

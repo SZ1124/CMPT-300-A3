@@ -29,6 +29,7 @@ struct SEM_s {
 };
 
 bool CreateInit(); //Called at the start of main.c
+void CreateQs() //Called at the start of main.c
 int Create (int priority);
 int Fork (void);
 bool Kill (int pid);
