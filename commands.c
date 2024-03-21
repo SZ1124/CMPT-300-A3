@@ -358,7 +358,7 @@ bool NewSemaphore (int semaphoreID, int init_val);
     semaphore->semaphoreID = sempahoreID; // Possibly check for range (0 to 4)
     semaphore->waitingList = NULL;
 
-    List_append(semaphoreList, semaphore);
+    List_prepend(semaphoreList, semaphore);
     return true;
 }
 
@@ -370,7 +370,7 @@ bool SemaphoreP (int semaphoreID)
             if(semaphore->waitingList == NULL){
                 semaphore->waitingList = List_create();
             }
-            List_append(semaphore->waitingList, runningProcess->pid);
+            List_prepend(semaphore->waitingList, runningProcess->pid);
             runningProcess->state = BLOCKED;
             return false;
         }
@@ -391,9 +391,8 @@ bool SemaphoreV (int semaphoreID)
     if(semaphore != NULL){
         semaphore->value ++;
         if(semaphore->waitingList != NULL && semaphore->waitingList->count > 0){
-            Node* temp = List_trim(semaphoreList);
-            PCB* firstProcess = (PCB*)temp->pItem;
-            firstProcess->state = READY;
+            PCB* temp = List_trim(semaphoreList);
+            temp->state = READY;
             free(temp);
             return true;
         }
@@ -406,12 +405,48 @@ bool SemaphoreV (int semaphoreID)
     }
 }
 
+void printInfo(PCB* process)
+{
+    printf("PID: %d\n", process->pid);
+    printf("Priority: %d\n", process->priority);
+    printf("State: %d\n", process->state);
+    printf("Message: %s\n", process->message);
+}
+
 void Procinfo (int pid)
 {
-
+    PCB* process;
+    if(List_search(priorityQ0, pidComparator, &pid))
+    {
+        process = (PCB*)List_curr(priorityQ0);
+    }
+    else if(List_search(priorityQ1, pidComparator, &pid))
+    {
+        process = (PCB*)List_curr(priorityQ1);
+    }
+    else if(List_search(priorityQ2, pidComparator, &pid))
+    {
+        process = (PCB*)List_curr(priorityQ2);
+    }
+    printInfo(process);
 }
 
 void Totalinfo (void)
 {
-
+    PCB* temp;
+    while(List_curr(priorityQ0) != NULL){
+        temp = (PCB*)List_curr(priorityQ0);
+        printInfo(temp);
+        List_next(priorityQ0);
+    }
+    while(List_curr(priorityQ1) != NULL){
+        temp = (PCB*)List_curr(priorityQ1);
+        printInfo(temp);
+        List_next(priorityQ1);
+    }
+    while(List_curr(priorityQ2) != NULL){
+        temp = (PCB*)List_curr(priorityQ2);
+        printInfo(temp);
+        List_next(priorityQ2);
+    }
 }
