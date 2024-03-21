@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <assert.h>
+#include <string.h>
 
 static List* priorityQ0;
 static List* priorityQ1;
@@ -288,7 +289,38 @@ void Quantum (void)
 
 void Send (int pid, char* msg)
 {
+    if(msg==NULL)
+    {
+        printf("***SEND MSG IS NULL***");
+        return;
+    }
+    else if(strlen(msg)>40)
+    {
+        printf("***SEND MSG EXCEEDS MAXIMUM SIZE***");
+        return;
+    }
+
+    //finding the process to send to
+    if(List_search(priorityQ0, pidComparator, &pid))
+    {
+        PCB* temp=List_curr(priorityQ0);
+        strcpy(temp->message, msg);
+
+    }
+    else if(List_search(priorityQ1, pidComparator, &pid))
+    {
+        PCB* temp=List_curr(priorityQ1);
+        strcpy(temp->message, msg);
+    }
+    else if(List_search(priorityQ2, pidComparator, &pid))
+    {
+        PCB* temp=List_curr(priorityQ2);
+        strcpy(temp->message, msg);
+    }
+
     
+
+
 }
 
 void Receive (void)
