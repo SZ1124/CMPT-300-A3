@@ -225,9 +225,6 @@ bool Kill (int pid)
                 return true;
             }
         }
-
-
-        return true;
     }
     //Search ready Q's to find the corresponding pid
     else if(List_search(priorityQ0, pidComparator, &pid))
@@ -405,13 +402,107 @@ void Send (int pid, char* msg)
         return;
     }
 
+    int successOrFailure = -1;
+
     //Store the receiver info
     runningProcess->sendPid = pid;
     strcpy(runningProcess->sendMessage, msg);
     runningProcess->state = BLOCKED;
 
-    List_prepend(waitSend, runningProcess);
+    successOrFailure = List_prepend(waitSend, runningProcess);
+    
+    //Restore process succeed
+    if(successOrFailure == 0)
+    {   
+        //Selecting new current running process
+        //Check Q0
+        if(List_count(priorityQ0) > 0)
+        {
+            List_last(priorityQ0);
+            while(List_curr(priorityQ0)->state != READY)
+            {
+                //when the current item is beyond the start of the list
+                if(List_prev(priorityQ0) == NULL)
+                {
+                    break;
+                }
+                else
+                {
+                    List_prev(priorityQ0);
+                }
+            }
+
+            if(List_curr(priorityQ0)->state == READY)
+            {
+                //change the old running process's state to ready to prevent rerun the same process
+                runningProcess->state = READY;
+                runningProcess = List_remove(priorityQ0);
+                runningProcess->state = RUNNING;
+
+            }
+        }
+
+        //Check Q1
+        if(List_count(priorityQ1) > 0)
+        {
+            List_last(priorityQ1);
+            while(List_curr(priorityQ1)->state != READY)
+            {
+                //when the current item is beyond the start of the list
+                if(List_prev(priorityQ1) == NULL)
+                {
+                    break;
+                }
+                else
+                {
+                    List_prev(priorityQ1);
+                }
+            }
+
+            if(List_curr(priorityQ1)->state == READY)
+            {
+                //change the old running process's state to ready to prevent rerun the same process
+                runningProcess->state = READY;
+                runningProcess = List_remove(priorityQ1);
+                runningProcess->state = RUNNING;
+
+            }
+        }
+
+        //Check Q2
+        if(List_count(priorityQ2) > 0)
+        {
+            List_last(priorityQ2);
+            while(List_curr(priorityQ2)->state != READY)
+            {
+                //when the current item is beyond the start of the list
+                if(List_prev(priorityQ2) == NULL)
+                {
+                    break;
+                }
+                else
+                {
+                    List_prev(priorityQ2);
+                }
+            }
+
+            if(List_curr(priorityQ2)->state == READY)
+            {
+                //change the old running process's state to ready to prevent rerun the same process
+                runningProcess->state = READY;
+                runningProcess = List_remove(priorityQ2);
+                runningProcess->state = RUNNING;
+
+            }
+        }
+
+
     }
+
+
+
+    
+
 
     
 
@@ -420,6 +511,21 @@ void Send (int pid, char* msg)
 
 void Receive (void)
 {
+    runningProcess->state = BLOCKED;
+    int receiverPid = runningProcess->
+
+    if(List_search(priorityQ0, pidComparator, &pid))
+    {
+
+    }
+    else if(List_search(priorityQ1, pidComparator, &pid))
+    {
+
+    }
+    else if(List_search(priorityQ2, pidComparator, &pid))
+    {
+
+    }
 
 }
 
@@ -434,6 +540,19 @@ bool Reply (int pid, char* msg)
     {
         printf("***REPLY MSG EXCEEDS MAXIMUM SIZE***");
         return false;
+    }
+
+    if(List_search(priorityQ0, pidComparator, &pid))
+    {
+
+    }
+    else if(List_search(priorityQ1, pidComparator, &pid))
+    {
+
+    }
+    else if(List_search(priorityQ2, pidComparator, &pid))
+    {
+
     }
 }
 

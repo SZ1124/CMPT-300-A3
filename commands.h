@@ -16,9 +16,11 @@ enum State {
 typedef struct PCB_s PCB;
 struct PCB_s {
     int pid;
+    int sendPid;
     int priority; //0,1,2
     enum State state;
     char message[BUFFER_SIZE];
+    char sendMessage[BUFFER_SIZE];
 };
 
 typedef struct SEM_s sem;
