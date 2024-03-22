@@ -109,15 +109,39 @@ bool allBlocked()
     enum State ready = READY;
     enum State running = RUNNING;
     
-    if(List_search(priorityQ0, stateComparator, &ready) || List_search(priorityQ0, stateComparator, &running))
+    List_first(priorityQ0);
+    List_first(priorityQ1);
+    List_first(priorityQ2);
+
+    //check Q0
+    if(List_search(priorityQ0, stateComparator, &ready))
     {
         return false;
     }
-    else if(List_search(priorityQ1, stateComparator, &ready) || List_search(priorityQ1, stateComparator, &running))
+    List_first(priorityQ0);
+    if(List_search(priorityQ0, stateComparator, &running))
     {
         return false;
     }
-    else if(List_search(priorityQ2, stateComparator, &ready) || List_search(priorityQ2, stateComparator, &running))
+
+    //check Q1
+    if(List_search(priorityQ1, stateComparator, &ready))
+    {
+        return false;
+    }
+    List_first(priorityQ1);
+    if(List_search(priorityQ1, stateComparator, &running))
+    {
+        return false;
+    }
+
+    //check Q2
+    if(List_search(priorityQ2, stateComparator, &ready))
+    {
+        return false;
+    }
+    List_first(priorityQ2);
+    if(List_search(priorityQ2, stateComparator, &running))
     {
         return false;
     }
@@ -137,6 +161,7 @@ bool Kill (int pid)
     List_first(priorityQ1);
     List_first(priorityQ2);
     
+    //kill running processs and it is not "init" process
     if(runningProcess->pid == pid && pid != 0)
     {
         
@@ -232,8 +257,13 @@ bool Kill (int pid)
             }
         }
     }
+
     //Search ready Q's to find the corresponding pid
-    else if(List_search(priorityQ0, pidComparator, &pid))
+    List_first(priorityQ0);
+    List_first(priorityQ1);
+    List_first(priorityQ2);
+
+    if(List_search(priorityQ0, pidComparator, &pid))
     {
         PCB* temp = (PCB*)List_remove(priorityQ0);; 
         free(temp);
@@ -416,6 +446,8 @@ bool sendPidComparator(void* pItem, void* pComparisonArg)
 }
 void Send (int pid, char* msg)
 {
+    List_first(waitSendQ);
+
     if(msg == NULL)
     {
         printf("***SEND MESSAGE IS NULL***");
@@ -432,6 +464,18 @@ void Send (int pid, char* msg)
         printf("***A MESSAGE ALREADY SENT TO THE RECEIVER, PLEASE TRY AGAIN AFTER THAT MESSAGE HAS BEEN RECEIVED***");
         return;
     }
+    //cannot send to "init", in order to prevent "init" from being blocked at receive
+    else if(pid == 0)
+    {
+        printf("***CANNOT SEND TO init***");
+        return;
+    }
+    //cannot use "init" to send
+    else if(runningProcess->pid == 0)
+    {
+        printf("***init IS RUNNNING, CANNOT SEND WITH init***");
+        return;
+    }
 
     int successOrFailure = -1;
 
@@ -446,6 +490,8 @@ void Send (int pid, char* msg)
     //Prepend process to blocked Q succeed
     if(successOrFailure == 0)
     {   
+        List_first(waitReceiveQ);
+
         //if the receiver is already blocked and placed in the blocked Q for receive
         if(List_search(waitReceiveQ, pidComparator, &pid))
         {
@@ -580,7 +626,15 @@ void Send (int pid, char* msg)
 
 void Receive (void)
 {
+    //prevent init being blocked by receive
+    if(runningProcess->pid == 0)
+    {
+        printf("***init IS RUNNING, CANNOT RECEIVE WITH init***");
+        return;
+    }
+
     int receiverPid = runningProcess->pid;
+    List_first(waitSendQ);
 
     //check the waitSendQ
     if(List_search(waitSendQ, sendPidComparator, &receiverPid))
@@ -708,6 +762,8 @@ bool Reply (int pid, char* msg)
         return false;
     }
 
+    List_first(waitSendQ);
+
     //if the sender is blocked and placed in the blocked Q
     if(List_search(waitSendQ, pidComparator, &pid))
     {
@@ -782,6 +838,8 @@ bool NewSemaphore (int semaphoreID, int init_val)
 
 bool SemaphoreP (int semaphoreID)
 {
+    List_first(semaphoreList);
+
     sem* semaphore = List_search(semaphoreList, semComparator, (void*)&semaphoreID);
     if(semaphore != NULL){
         if(semaphore->value <= 0){
@@ -805,6 +863,8 @@ bool SemaphoreP (int semaphoreID)
 
 bool SemaphoreV (int semaphoreID)
 {  
+    List_first(semaphoreList);
+
     sem* semaphore = List_search(semaphoreList, semComparator, (void*)&semaphoreID);
     if(semaphore != NULL){
         semaphore->value ++;
