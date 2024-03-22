@@ -1,7 +1,13 @@
-#ifndef COMMANDS_H
-#define COMMANDS_H
+#ifndef _COMMANDS_H
+#define _COMMANDS_H
 
 #include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
+#include <string.h>
+
+
 #include "list.h"
 
 #define BUFFER_SIZE 40
@@ -30,8 +36,8 @@ struct SEM_s {
     List* waitingList;
 };
 
-bool CreateInit(); //Called at the start of main.c
-void CreateQs() //Called at the start of main.c
+void CreateInit(void); //Called at the start of main.c
+void CreateQs(void); //Called at the start of main.c
 int Create (int priority);
 int Fork (void);
 bool Kill (int pid);

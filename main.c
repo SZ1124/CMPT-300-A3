@@ -1,8 +1,9 @@
-
+#include "list.h"
 #include "commands.h"
 #include <stdio.h>
 #include <string.h>
 
+// need to check for init being killed
 int main() {
     printf("Welcome to the OS sim!\n");
 
@@ -11,9 +12,10 @@ int main() {
     int first_arg;
     int second_arg;
     char msg[100];
-
+    CreateInit();
+    CreateQs();
     while(1){
-        printf("$ ");
+        printf("\n$ ");
         fgets(input, sizeof(input), stdin);
         input[strcspn(input, "\n")] = 0;
 
@@ -112,7 +114,7 @@ int main() {
                     printf("Invalid input format for command 'I'\n");
                     return 1;
                 }
-                printf("PID: %d\n", first_arg);
+                printf("Printing PID: %d info\n", first_arg);
                 Procinfo(first_arg);
                 break;
 

@@ -1,26 +1,22 @@
 #include "commands.h"
-#include "list.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <assert.h>
-#include <string.h>
 
-static List* priorityQ0;
-static List* priorityQ1;
-static List* priorityQ2;
-static List* waitSendQ;
-static List* waitReceiveQ;
-static List* semaphoreList;
 
-static int idNum = 1;
+List* priorityQ0;
+List* priorityQ1;
+List* priorityQ2;
+List* waitSendQ;
+List* waitReceiveQ;
+List* semaphoreList;
 
-static PCB* init = malloc(sizeof(PCB));
-static PCB* runningProcess;
+int idNum = 1;
+
+PCB* init;
+PCB* runningProcess;
 
 
 void CreateInit()
 {
+    init = malloc(sizeof(PCB));
     init->pid = 0;
     init->sendPid = -1;
     init->priority = -1;
@@ -44,7 +40,7 @@ void CreateQs()
 }
 
 
-int Create (int priority);
+int Create (int priority)
 {
     PCB* newProcess = malloc(sizeof(PCB));
     newProcess->pid = idNum;
@@ -105,13 +101,13 @@ int Fork (void)
 bool stateComparator(void* pItem, void* pComparisonArg) 
 {
     PCB* item = (PCB*)pItem;
-    State comparisonState = *(State*)pComparisonArg;
+    enum State comparisonState = *(enum State*)pComparisonArg;
     return item->state == comparisonState;
 }
 bool allBlocked()
 {
-    State ready = READY;
-    State running = RUNNING;
+    enum State ready = READY;
+    enum State running = RUNNING;
     
     if(List_search(priorityQ0, stateComparator, &ready) || List_search(priorityQ0, stateComparator, &running))
     {
@@ -137,8 +133,13 @@ bool pidComparator(void* pItem, void* pComparisonArg)
 bool Kill (int pid)
 {
     //kill the running process
+    List_first(priorityQ0);
+    List_first(priorityQ1);
+    List_first(priorityQ2);
+    
     if(runningProcess->pid == pid && pid != 0)
     {
+        
         PCB* temp = runningProcess; 
         runningProcess = NULL;  
         free(temp);    
@@ -149,7 +150,7 @@ bool Kill (int pid)
             runningProcess = init;
             runningProcess->state = RUNNING;
 
-            return;
+            return true;
         }
 
         //Selecting new current running process
@@ -157,7 +158,7 @@ bool Kill (int pid)
         if(List_count(priorityQ0) > 0)
         {
             List_last(priorityQ0);
-            while(List_curr(priorityQ0)->state != READY)
+            while(((PCB*)List_curr(priorityQ0))->state != READY)
             {
                 //when the current item is beyond the start of the list
                 if(List_prev(priorityQ0) == NULL)
@@ -170,9 +171,9 @@ bool Kill (int pid)
                 }
             }
 
-            if(List_curr(priorityQ0)->state == READY)
+            if(((PCB*)List_curr(priorityQ0))->state == READY)
             {
-                runningProcess = List_remove(priorityQ0);
+                runningProcess = (PCB*)List_remove(priorityQ0);
                 runningProcess->state = RUNNING;
 
                 return true;
@@ -183,7 +184,7 @@ bool Kill (int pid)
         if(List_count(priorityQ1) > 0)
         {
             List_last(priorityQ1);
-            while(List_curr(priorityQ1)->state != READY)
+            while(((PCB*)List_curr(priorityQ1))->state != READY)
             {
                 //when the current item is beyond the start of the list
                 if(List_prev(priorityQ1) == NULL)
@@ -196,9 +197,9 @@ bool Kill (int pid)
                 }
             }
 
-            if(List_curr(priorityQ1)->state == READY)
+            if(((PCB*)List_curr(priorityQ1))->state == READY)
             {
-                runningProcess = List_remove(priorityQ1);
+                runningProcess = (PCB*)List_remove(priorityQ1);
                 runningProcess->state = RUNNING;
 
                 return true;
@@ -209,7 +210,7 @@ bool Kill (int pid)
         if(List_count(priorityQ2) > 0)
         {
             List_last(priorityQ2);
-            while(List_curr(priorityQ2)->state != READY)
+            while(((PCB*)List_curr(priorityQ2))->state != READY)
             {
                 //when the current item is beyond the start of the list
                 if(List_prev(priorityQ2) == NULL)
@@ -222,9 +223,9 @@ bool Kill (int pid)
                 }
             }
 
-            if(List_curr(priorityQ2)->state == READY)
+            if(((PCB*)List_curr(priorityQ2))->state == READY)
             {
-                runningProcess = List_remove(priorityQ2);
+                runningProcess = (PCB*)List_remove(priorityQ2);
                 runningProcess->state = RUNNING;
 
                 return true;
@@ -234,13 +235,13 @@ bool Kill (int pid)
     //Search ready Q's to find the corresponding pid
     else if(List_search(priorityQ0, pidComparator, &pid))
     {
-        PCB* temp = List_remove(priorityQ0);; 
+        PCB* temp = (PCB*)List_remove(priorityQ0);; 
         free(temp);
         return true;
     }
     else if(List_search(priorityQ1, pidComparator, &pid))
     {
-        PCB* temp = List_remove(priorityQ1);
+        PCB* temp = (PCB*)List_remove(priorityQ1);
         free(temp);
         return true;
     }
@@ -318,7 +319,7 @@ void Quantum (void)
         if(List_count(priorityQ0) > 0)
         {
             List_last(priorityQ0);
-            while(List_curr(priorityQ0)->state != READY)
+            while(((PCB*)List_curr(priorityQ0))->state != READY)
             {
                 //when the current item is beyond the start of the list
                 if(List_prev(priorityQ0) == NULL)
@@ -331,14 +332,14 @@ void Quantum (void)
                 }
             }
 
-            if(List_curr(priorityQ0)->state == READY)
+            if(((PCB*)List_curr(priorityQ0))->state == READY)
             {
                 //change the old running process's state to ready to prevent rerun the same process
                 runningProcess->state = READY;
                 runningProcess = List_remove(priorityQ0);
                 runningProcess->state = RUNNING;
 
-                return true;
+                return;
             }
         }
 
@@ -346,7 +347,7 @@ void Quantum (void)
         if(List_count(priorityQ1) > 0)
         {
             List_last(priorityQ1);
-            while(List_curr(priorityQ1)->state != READY)
+            while(((PCB*)List_curr(priorityQ1))->state != READY)
             {
                 //when the current item is beyond the start of the list
                 if(List_prev(priorityQ1) == NULL)
@@ -359,14 +360,14 @@ void Quantum (void)
                 }
             }
 
-            if(List_curr(priorityQ1)->state == READY)
+            if(((PCB*)List_curr(priorityQ1))->state == READY)
             {
                 //change the old running process's state to ready to prevent rerun the same process
                 runningProcess->state = READY;
                 runningProcess = List_remove(priorityQ1);
                 runningProcess->state = RUNNING;
 
-                return true;
+                return;
             }
         }
 
@@ -374,7 +375,7 @@ void Quantum (void)
         if(List_count(priorityQ2) > 0)
         {
             List_last(priorityQ2);
-            while(List_curr(priorityQ2)->state != READY)
+            while(((PCB*)List_curr(priorityQ2))->state != READY)
             {
                 //when the current item is beyond the start of the list
                 if(List_prev(priorityQ2) == NULL)
@@ -387,14 +388,14 @@ void Quantum (void)
                 }
             }
 
-            if(List_curr(priorityQ2)->state == READY)
+            if(((PCB*)List_curr(priorityQ2))->state == READY)
             {
                 //change the old running process's state to ready to prevent rerun the same process
                 runningProcess->state = READY;
                 runningProcess = List_remove(priorityQ2);
                 runningProcess->state = RUNNING;
 
-                return true;
+                return;
             }
         }
 
@@ -493,7 +494,7 @@ void Send (int pid, char* msg)
         if(List_count(priorityQ0) > 0)
         {
             List_last(priorityQ0);
-            while(List_curr(priorityQ0)->state != READY)
+            while(((PCB*)List_curr(priorityQ0))->state != READY)
             {
                 //when the current item is beyond the start of the list
                 if(List_prev(priorityQ0) == NULL)
@@ -506,7 +507,7 @@ void Send (int pid, char* msg)
                 }
             }
 
-            if(List_curr(priorityQ0)->state == READY)
+            if(((PCB*)List_curr(priorityQ0))->state == READY)
             {
                 runningProcess = List_remove(priorityQ0);
                 runningProcess->state = RUNNING;
@@ -519,7 +520,7 @@ void Send (int pid, char* msg)
         if(List_count(priorityQ1) > 0)
         {
             List_last(priorityQ1);
-            while(List_curr(priorityQ1)->state != READY)
+            while(((PCB*)List_curr(priorityQ1))->state != READY)
             {
                 //when the current item is beyond the start of the list
                 if(List_prev(priorityQ1) == NULL)
@@ -532,7 +533,7 @@ void Send (int pid, char* msg)
                 }
             }
 
-            if(List_curr(priorityQ1)->state == READY)
+            if(((PCB*)List_curr(priorityQ1))->state == READY)
             {
                 runningProcess = List_remove(priorityQ1);
                 runningProcess->state = RUNNING;
@@ -545,7 +546,7 @@ void Send (int pid, char* msg)
         if(List_count(priorityQ2) > 0)
         {
             List_last(priorityQ2);
-            while(List_curr(priorityQ2)->state != READY)
+            while(((PCB*)List_curr(priorityQ2))->state != READY)
             {
                 //when the current item is beyond the start of the list
                 if(List_prev(priorityQ2) == NULL)
@@ -558,7 +559,7 @@ void Send (int pid, char* msg)
                 }
             }
 
-            if(List_curr(priorityQ2)->state == READY)
+            if(((PCB*)List_curr(priorityQ2))->state == READY)
             {
                 runningProcess = List_remove(priorityQ2);
                 runningProcess->state = RUNNING;
@@ -612,7 +613,7 @@ void Receive (void)
             if(List_count(priorityQ0) > 0)
             {
                 List_last(priorityQ0);
-                while(List_curr(priorityQ0)->state != READY)
+                while(((PCB*)List_curr(priorityQ0))->state != READY)
                 {
                     //when the current item is beyond the start of the list
                     if(List_prev(priorityQ0) == NULL)
@@ -625,7 +626,7 @@ void Receive (void)
                     }
                 }
 
-                if(List_curr(priorityQ0)->state == READY)
+                if(((PCB*)List_curr(priorityQ0))->state == READY)
                 {
                     runningProcess = List_remove(priorityQ0);
                     runningProcess->state = RUNNING;
@@ -638,7 +639,7 @@ void Receive (void)
             if(List_count(priorityQ1) > 0)
             {
                 List_last(priorityQ1);
-                while(List_curr(priorityQ1)->state != READY)
+                while(((PCB*)List_curr(priorityQ1))->state != READY)
                 {
                     //when the current item is beyond the start of the list
                     if(List_prev(priorityQ1) == NULL)
@@ -651,7 +652,7 @@ void Receive (void)
                     }
                 }
 
-                if(List_curr(priorityQ1)->state == READY)
+                if(((PCB*)List_curr(priorityQ1))->state == READY)
                 {
                     runningProcess = List_remove(priorityQ1);
                     runningProcess->state = RUNNING;
@@ -664,7 +665,7 @@ void Receive (void)
             if(List_count(priorityQ2) > 0)
             {
                 List_last(priorityQ2);
-                while(List_curr(priorityQ2)->state != READY)
+                while(((PCB*)List_curr(priorityQ2))->state != READY)
                 {
                     //when the current item is beyond the start of the list
                     if(List_prev(priorityQ2) == NULL)
@@ -677,7 +678,7 @@ void Receive (void)
                     }
                 }
 
-                if(List_curr(priorityQ2)->state == READY)
+                if(((PCB*)List_curr(priorityQ2))->state == READY)
                 {
                     runningProcess = List_remove(priorityQ2);
                     runningProcess->state = RUNNING;
@@ -737,11 +738,11 @@ bool Reply (int pid, char* msg)
             printf("***SUCCESSFULLY UNBLOCKED THE SENDER BY SENDING IT A REPLY***\n");
             printf("REPLIER PID: %d\n", runningProcess->pid);
             printf("REPLY Message: %s\n", temp->message);
-            return;
+            return true;
         }
 
         printf("***UNBLOCK SENDER UNSUCCESSFUL***");
-        return;
+        return false;
     }
 
     return false;
@@ -755,10 +756,10 @@ bool semComparator(void* pItem, void* pComparisonArg)
 {
     sem* item = (sem*)pItem;
     int comparisonSem = *(int*)pComparisonArg;
-    return item->semaphoareID == comparisonSem;
+    return item->semaphoreID == comparisonSem;
 }
 
-bool NewSemaphore (int semaphoreID, int init_val);
+bool NewSemaphore (int semaphoreID, int init_val)
 {   
     // Max number of semaphores
     if(semaphoreList->count == 5){
@@ -772,7 +773,7 @@ bool NewSemaphore (int semaphoreID, int init_val);
     
     sem* semaphore = (sem*)malloc(sizeof(sem));
     semaphore->value = init_val; // Possibly check for range (0 or higher)
-    semaphore->semaphoreID = sempahoreID; // Possibly check for range (0 to 4)
+    semaphore->semaphoreID = semaphoreID; // Possibly check for range (0 to 4)
     semaphore->waitingList = NULL;
 
     List_prepend(semaphoreList, semaphore);
@@ -781,13 +782,13 @@ bool NewSemaphore (int semaphoreID, int init_val);
 
 bool SemaphoreP (int semaphoreID)
 {
-    sem* semaphore = List_search(semaphoreList, semComparator, semaphoreID);
+    sem* semaphore = List_search(semaphoreList, semComparator, (void*)&semaphoreID);
     if(semaphore != NULL){
         if(semaphore->value <= 0){
             if(semaphore->waitingList == NULL){
                 semaphore->waitingList = List_create();
             }
-            List_prepend(semaphore->waitingList, runningProcess->pid);
+            List_prepend(semaphore->waitingList, runningProcess);
             runningProcess->state = BLOCKED;
             return false;
         }
@@ -804,7 +805,7 @@ bool SemaphoreP (int semaphoreID)
 
 bool SemaphoreV (int semaphoreID)
 {  
-    sem* semaphore = List_search(semaphoreList, semComparator, semaphoreID);
+    sem* semaphore = List_search(semaphoreList, semComparator, (void*)&semaphoreID);
     if(semaphore != NULL){
         semaphore->value ++;
         if(semaphore->waitingList != NULL && semaphore->waitingList->count > 0){
@@ -822,28 +823,56 @@ bool SemaphoreV (int semaphoreID)
     }
 }
 
+const char* stateToString(enum State state){
+    switch(state){
+        case READY:
+            return "READY";
+        case RUNNING:
+            return "RUNNING";
+        case BLOCKED:
+            return "BLOCKED";
+        default:
+            return "UNKNOWN STATE";
+    }
+
+}
+
 void printInfo(PCB* process)
 {
     printf("PID: %d\n", process->pid);
     printf("Priority: %d\n", process->priority);
-    printf("State: %d\n", process->state);
+    printf("State: %s\n", stateToString(process->state));
     printf("Message: %s\n", process->message);
 }
 
 void Procinfo (int pid)
 {
-    PCB* process;
-    if(List_search(priorityQ0, pidComparator, &pid))
-    {
+    PCB* process = NULL;
+
+    //Re-positioning list pointers
+    List_first(priorityQ0);
+    List_first(priorityQ1);
+    List_first(priorityQ2);
+
+    // Seraching through three queues
+    if(List_search(priorityQ0, pidComparator, &pid)){
         process = (PCB*)List_curr(priorityQ0);
     }
-    else if(List_search(priorityQ1, pidComparator, &pid))
-    {
+    else if(List_search(priorityQ1, pidComparator, &pid)){
         process = (PCB*)List_curr(priorityQ1);
     }
-    else if(List_search(priorityQ2, pidComparator, &pid))
-    {
+    else if(List_search(priorityQ2, pidComparator, &pid)){
         process = (PCB*)List_curr(priorityQ2);
+    }
+    
+    if(runningProcess->pid == pid){
+        printInfo(runningProcess);
+        return;
+    }
+
+    if(process == NULL){
+        printf("No process with such PID exists.\n");
+        return;
     }
     printInfo(process);
 }
@@ -851,6 +880,9 @@ void Procinfo (int pid)
 void Totalinfo (void)
 {
     PCB* temp;
+    List_first(priorityQ0);
+    List_first(priorityQ1);
+    List_first(priorityQ2);
     while(List_curr(priorityQ0) != NULL){
         temp = (PCB*)List_curr(priorityQ0);
         printInfo(temp);
@@ -866,4 +898,5 @@ void Totalinfo (void)
         printInfo(temp);
         List_next(priorityQ2);
     }
+    printInfo(runningProcess);
 }
