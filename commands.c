@@ -168,6 +168,7 @@ bool Kill (int pid)
             if(List_curr(priorityQ0)->state == READY)
             {
                 runningProcess = List_remove(priorityQ0);
+                runningProcess->state = RUNNING;
 
                 return true;
             }
@@ -193,6 +194,7 @@ bool Kill (int pid)
             if(List_curr(priorityQ1)->state == READY)
             {
                 runningProcess = List_remove(priorityQ1);
+                runningProcess->state = RUNNING;
 
                 return true;
             }
@@ -218,12 +220,12 @@ bool Kill (int pid)
             if(List_curr(priorityQ2)->state == READY)
             {
                 runningProcess = List_remove(priorityQ2);
+                runningProcess->state = RUNNING;
 
                 return true;
             }
         }
 
-        runningProcess->state = RUNNING;
 
         return true;
     }
