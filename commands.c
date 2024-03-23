@@ -329,10 +329,20 @@ int Quantum (void)
         return runningProcess->pid;
     }
 
+
     int successOrFailure=-1;
 
-    //Quantum time over, prepend current running process to the corresponding ready Q
-    if(runningProcess->priority == 0)
+    //Quantum time over, prepend current running process to the corresponding ready Q, or stop "init" from running
+    if(runningProcess->pid == 0)
+    {
+        runningProcess->state = READY;
+
+        if(init->state == READY)
+        {
+            successOrFailure = 0;
+        }      
+    }
+    else if(runningProcess->priority == 0)
     {   
         successOrFailure = List_prepend(priorityQ0, runningProcess);
     }
