@@ -912,7 +912,7 @@ void printInfo(PCB* process)
     printf("Priority: %d\n", process->priority);
     printf("State: %s\n", stateToString(process->state));
     printf("Message: %s\n", process->message);
-    printf("sendMessage: %s\n", process->sendMessage);
+    printf("sendMessage: %s\n\n", process->sendMessage);
 }
 
 void Procinfo (int pid)
