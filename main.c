@@ -14,6 +14,7 @@ int main() {
     char msg[100];
     CreateInit();
     CreateQs();
+
     while(1){
         printf("\n$ ");
         fgets(input, sizeof(input), stdin);
@@ -126,6 +127,9 @@ int main() {
             default:
                 printf("Invalid command entered.\n");
         }
+
+        printf("\nCurrently running is: %d",Quantum());
+        
     }
     
     return 0;

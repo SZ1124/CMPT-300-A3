@@ -316,24 +316,30 @@ void Exit (void)
 
 
 
-void Quantum (void)
-{
+int Quantum (void)
+{   
+    
     //if there's no process left or all the other processes are blocked, except the currently running process:
     //Based on Round Robin, the currently running process will still be running until it finishes
     if((List_count(priorityQ0) == 0 && List_count(priorityQ1) == 0 && List_count(priorityQ2) == 0) || allBlocked())
     {
-        return;
+        return runningProcess->pid;
     }
 
     int successOrFailure=-1;
 
+    if(runningProcess->priority == -1){
+        free(runningProcess);
+        successOrFailure = 0;
+    }
+
     //Quantum time over, prepend current running process to the corresponding ready Q
     if(runningProcess->priority == 0)
-    {
+    {   
         successOrFailure = List_prepend(priorityQ0, runningProcess);
     }
     else if(runningProcess->priority == 1)
-    {
+    {  
         successOrFailure = List_prepend(priorityQ1, runningProcess);
     }
     else if(runningProcess->priority == 2)
@@ -354,6 +360,7 @@ void Quantum (void)
                 //when the current item is beyond the start of the list
                 if(List_prev(priorityQ0) == NULL)
                 {
+                    List_first(priorityQ1);
                     break;
                 }
                 else
@@ -369,7 +376,7 @@ void Quantum (void)
                 runningProcess = List_remove(priorityQ0);
                 runningProcess->state = RUNNING;
 
-                return;
+                return runningProcess->pid;
             }
         }
 
@@ -382,6 +389,7 @@ void Quantum (void)
                 //when the current item is beyond the start of the list
                 if(List_prev(priorityQ1) == NULL)
                 {
+                    List_first(priorityQ1);
                     break;
                 }
                 else
@@ -397,7 +405,7 @@ void Quantum (void)
                 runningProcess = List_remove(priorityQ1);
                 runningProcess->state = RUNNING;
 
-                return;
+                return runningProcess->pid;
             }
         }
 
@@ -410,6 +418,7 @@ void Quantum (void)
                 //when the current item is beyond the start of the list
                 if(List_prev(priorityQ2) == NULL)
                 {
+                    List_first(priorityQ2);
                     break;
                 }
                 else
@@ -425,14 +434,14 @@ void Quantum (void)
                 runningProcess = List_remove(priorityQ2);
                 runningProcess->state = RUNNING;
 
-                return;
+                return runningProcess->pid;
             }
         }
 
 
     }
 
-    return;
+    return runningProcess->pid;
 }
 
 
@@ -536,6 +545,19 @@ void Send (int pid, char* msg)
             return;
         }
 
+        if(runningProcess->priority == 0)
+        {   
+            successOrFailure = List_prepend(priorityQ0, runningProcess);
+        }
+        else if(runningProcess->priority == 1)
+        {  
+            successOrFailure = List_prepend(priorityQ1, runningProcess);
+        }
+        else if(runningProcess->priority == 2)
+        {
+            successOrFailure = List_prepend(priorityQ2, runningProcess);
+        }
+
         //Check Q0
         if(List_count(priorityQ0) > 0)
         {
@@ -545,6 +567,7 @@ void Send (int pid, char* msg)
                 //when the current item is beyond the start of the list
                 if(List_prev(priorityQ0) == NULL)
                 {
+                    List_first(priorityQ0);
                     break;
                 }
                 else
@@ -571,6 +594,7 @@ void Send (int pid, char* msg)
                 //when the current item is beyond the start of the list
                 if(List_prev(priorityQ1) == NULL)
                 {
+                    List_first(priorityQ1);
                     break;
                 }
                 else
@@ -597,6 +621,7 @@ void Send (int pid, char* msg)
                 //when the current item is beyond the start of the list
                 if(List_prev(priorityQ2) == NULL)
                 {
+                    List_first(priorityQ2);
                     break;
                 }
                 else
@@ -672,6 +697,7 @@ void Receive (void)
                     //when the current item is beyond the start of the list
                     if(List_prev(priorityQ0) == NULL)
                     {
+                        List_first(priorityQ0);
                         break;
                     }
                     else
@@ -698,6 +724,7 @@ void Receive (void)
                     //when the current item is beyond the start of the list
                     if(List_prev(priorityQ1) == NULL)
                     {
+                        List_first(priorityQ1);
                         break;
                     }
                     else
@@ -724,6 +751,7 @@ void Receive (void)
                     //when the current item is beyond the start of the list
                     if(List_prev(priorityQ2) == NULL)
                     {
+                        List_first(priorityQ2);
                         break;
                     }
                     else
@@ -772,35 +800,16 @@ bool Reply (int pid, char* msg)
         temp->state = READY;
         strcpy(temp->message, msg); //STORE REPLY IN THE SENDER'S MESSAGE BUFFER, MIGHT CONSIDER ADD ANOTHER MESSAGE BUFFER FOR REPLY
 
-        int successOrFailure = -1;
-
-        //place the receiver back to priority Qs
-        if(temp->priority == 0)
-        {
-            successOrFailure = List_prepend(priorityQ0, temp);
-        }
-        else if(temp->priority == 1)
-        {
-            successOrFailure = List_prepend(priorityQ1, temp);
-        }
-        else if(temp->priority == 2)
-        {
-            successOrFailure = List_prepend(priorityQ2, temp);
-        }
 
         //print the replier info and the reply message in sender's message buffer
-        if(successOrFailure == 0)
-        {   
-            printf("***SUCCESSFULLY UNBLOCKED THE SENDER BY SENDING IT A REPLY***\n");
-            printf("REPLIER PID: %d\n", runningProcess->pid);
-            printf("REPLY Message: %s\n", temp->message);
-            return true;
-        }
+        printf("***SUCCESSFULLY UNBLOCKED THE SENDER BY SENDING IT A REPLY***\n");
+        printf("REPLIER PID: %d\n", runningProcess->pid);
+        printf("REPLY Message: %s\n", temp->message);
+        return true;
 
-        printf("***UNBLOCK SENDER UNSUCCESSFUL***");
-        return false;
     }
 
+    printf("***UNBLOCK SENDER UNSUCCESSFUL***");
     return false;
 }
 
@@ -830,7 +839,7 @@ bool NewSemaphore (int semaphoreID, int init_val)
     sem* semaphore = (sem*)malloc(sizeof(sem));
     semaphore->value = init_val; // Possibly check for range (0 or higher)
     semaphore->semaphoreID = semaphoreID; // Possibly check for range (0 to 4)
-    semaphore->waitingList = NULL;
+    semaphore->waitingList = List_create();
 
     List_prepend(semaphoreList, semaphore);
     return true;
@@ -839,8 +848,8 @@ bool NewSemaphore (int semaphoreID, int init_val)
 bool SemaphoreP (int semaphoreID)
 {
     List_first(semaphoreList);
-
     sem* semaphore = List_search(semaphoreList, semComparator, (void*)&semaphoreID);
+    printf("Semaphore ID: %d, Value: %d\n", semaphore->semaphoreID, semaphore->value);
     if(semaphore != NULL){
         if(semaphore->value <= 0){
             if(semaphore->waitingList == NULL){
@@ -848,6 +857,7 @@ bool SemaphoreP (int semaphoreID)
             }
             List_prepend(semaphore->waitingList, runningProcess);
             runningProcess->state = BLOCKED;
+            printf("Blocking process with pid: %d\n", runningProcess->pid);
             return false;
         }
         else{
@@ -871,7 +881,6 @@ bool SemaphoreV (int semaphoreID)
         if(semaphore->waitingList != NULL && semaphore->waitingList->count > 0){
             PCB* temp = List_trim(semaphoreList);
             temp->state = READY;
-            free(temp);
             return true;
         }
         else{
@@ -903,6 +912,7 @@ void printInfo(PCB* process)
     printf("Priority: %d\n", process->priority);
     printf("State: %s\n", stateToString(process->state));
     printf("Message: %s\n", process->message);
+    printf("sendMessage: %s\n", process->sendMessage);
 }
 
 void Procinfo (int pid)

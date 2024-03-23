@@ -42,7 +42,7 @@ int Create (int priority);
 int Fork (void);
 bool Kill (int pid);
 void Exit (void);
-void Quantum (void);
+int Quantum (void);
 void Send(int pid, char* msg); // return type uncertain
 void Receive (void); //return type uncertain
 bool Reply (int pid, char* msg);
