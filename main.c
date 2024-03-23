@@ -30,7 +30,7 @@ int main() {
             case 'C':
                 if (sscanf(input, "%*c %d", &first_arg) != 1) {
                     printf("Invalid input format for command 'C'\n");
-                    return 1;
+                    break;
                 }
                 printf("Priority for Create: %d\n", first_arg);
                 Create(first_arg);
@@ -44,7 +44,7 @@ int main() {
             case 'K':
                 if (sscanf(input, "%*c %d", &first_arg) != 1) {
                     printf("Invalid input format for command 'K'\n");
-                    return 1;
+                    break;
                 }
                 printf("PID to kill: %d\n", first_arg);
                 Kill(first_arg);
@@ -63,7 +63,7 @@ int main() {
             case 'S':
                 if (sscanf(input, "%*c %d %[^\n]", &first_arg, msg) != 2) {
                     printf("Invalid input format for command 'S'\n");
-                    return 1;
+                    break;
                 }
                 printf("PID: %d, Message: %s\n", first_arg, msg);
                 Send(first_arg, msg);
@@ -77,7 +77,7 @@ int main() {
             case 'Y':
                 if (sscanf(input, "%*c %d %[^\n]", &first_arg, msg) != 2) {
                     printf("Invalid input format for command 'Y'\n");
-                    return 1;
+                    break;
                 }
                 printf("PID: %d, Message: %s\n", first_arg, msg);
                 Reply(first_arg, msg);
@@ -95,7 +95,7 @@ int main() {
             case 'P':
                 if (sscanf(input, "%*c %d", &first_arg) != 1) {
                     printf("Invalid input format for command 'P'\n");
-                    return 1;
+                    break;
                 }
                 printf("Semaphore: %d\n", first_arg);
                 SemaphoreP(first_arg);
@@ -104,7 +104,7 @@ int main() {
             case 'V':
                 if (sscanf(input, "%*c %d", &first_arg) != 1) {
                     printf("Invalid input format for command 'V'\n");
-                    return 1;
+                    break;
                 }
                 printf("Semaphore: %d\n", first_arg);
                 SemaphoreV(first_arg);
@@ -113,7 +113,7 @@ int main() {
             case 'I':
                 if (sscanf(input, "%*c %d", &first_arg) != 1) {
                     printf("Invalid input format for command 'I'\n");
-                    return 1;
+                    break;
                 }
                 printf("Printing PID: %d info\n", first_arg);
                 Procinfo(first_arg);
