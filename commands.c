@@ -104,6 +104,7 @@ bool stateComparator(void* pItem, void* pComparisonArg)
     enum State comparisonState = *(enum State*)pComparisonArg;
     return item->state == comparisonState;
 }
+
 bool allBlocked()
 {
     enum State ready = READY;
@@ -148,12 +149,14 @@ bool allBlocked()
 
     return true;
 }
+
 bool pidComparator(void* pItem, void* pComparisonArg) 
 {
     PCB* item = (PCB*)pItem;
     int comparisonPid = *(int*)pComparisonArg;
     return item->pid == comparisonPid;
 }
+
 bool Kill (int pid)
 {
     //kill the running process
@@ -327,11 +330,6 @@ int Quantum (void)
     }
 
     int successOrFailure=-1;
-
-    if(runningProcess->priority == -1){
-        free(runningProcess);
-        successOrFailure = 0;
-    }
 
     //Quantum time over, prepend current running process to the corresponding ready Q
     if(runningProcess->priority == 0)
@@ -912,7 +910,7 @@ void printInfo(PCB* process)
     printf("Priority: %d\n", process->priority);
     printf("State: %s\n", stateToString(process->state));
     printf("Message: %s\n", process->message);
-    printf("sendMessage: %s\n\n", process->sendMessage);
+    printf("sendMessage: %s\n", process->sendMessage);
 }
 
 void Procinfo (int pid)
@@ -944,7 +942,13 @@ void Procinfo (int pid)
         printf("No process with such PID exists.\n");
         return;
     }
-    printInfo(process);
+
+    if(pid == 0){
+        printInfo(init);
+    }
+    else{
+        printInfo(process);
+    }
 }
 
 void Totalinfo (void)
@@ -969,4 +973,5 @@ void Totalinfo (void)
         List_next(priorityQ2);
     }
     printInfo(runningProcess);
+    printInfo(init);
 }
