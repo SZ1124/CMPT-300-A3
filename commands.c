@@ -795,6 +795,50 @@ bool Reply (int pid, char* msg)
         return false;
     }
 
+    //check if the pid never did a send. Or if the replied sender is already unblocked and is inside the ready Q, update message
+    if(List_search(priorityQ0, pidComparator, &pid))
+    {
+        PCB* temp = (PCB*)List_curr(priorityQ0)
+
+        if(strlen(temp->sendMessage) == 0)
+        {
+            prinft("***ENTERED PID NEVER DID A SEND BEFORE***");
+            return false;
+        }
+
+        //Send reply
+        strcpy(temp->message, msg);
+
+    }
+    else if(List_search(priorityQ1, pidComparator, &pid))
+    {
+        PCB* temp = (PCB*)List_curr(priorityQ1)
+
+        if(strlen(temp->sendMessage) == 0)
+        {
+            prinft("***ENTERED PID NEVER DID A SEND BEFORE***");
+            return false;
+        }
+
+        //Send reply
+        strcpy(temp->message, msg);
+
+    }
+    else if(List_search(priorityQ2, pidComparator, &pid))
+    {
+        PCB* temp = (PCB*)List_curr(priorityQ2)
+
+        if(strlen(temp->sendMessage) == 0)
+        {
+            prinft("***ENTERED PID NEVER DID A SEND BEFORE***");
+            return false;
+        }
+
+        //Send reply
+        strcpy(temp->message, msg);
+
+    }
+
     List_first(waitSendQ);
 
     //if the sender is blocked and placed in the blocked Q
@@ -820,8 +864,7 @@ bool Reply (int pid, char* msg)
 
         //print the replier info and the reply message in sender's message buffer
         printf("***SUCCESSFULLY UNBLOCKED THE SENDER BY SENDING IT A REPLY***\n");
-        printf("REPLIER PID: %d\n", runningProcess->pid);
-        printf("REPLY Message: %s\n", temp->message);
+
         return true;
 
     }
