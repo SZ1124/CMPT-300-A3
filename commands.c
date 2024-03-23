@@ -48,6 +48,17 @@ int Create (int priority)
     newProcess->priority = priority;
     newProcess->state = READY;
 
+    //replace init immediately with first created process
+    if(newProcess->pid = 1)
+    {
+        runningProcess->state = READY;
+        runningProcess = newProcess;
+        newProcess->state = RUNNING;
+        idNum += 1;
+
+        return newProcess->pid;
+    }
+
     int successOrFailure = -1;
 
     //prepend the new process into the ready Q
@@ -490,7 +501,7 @@ void Send (int pid, char* msg)
     //cannot use "init" to send
     else if(runningProcess->pid == 0)
     {
-        printf("***init IS RUNNNING, CANNOT SEND WITH init***");
+        printf("***init IS RUNNING, CANNOT SEND WITH init***");
         return;
     }
 
