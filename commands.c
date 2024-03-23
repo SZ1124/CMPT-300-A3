@@ -48,7 +48,6 @@ int Create (int priority)
     newProcess->priority = priority;
     newProcess->state = READY;
 
-    //replace init immediately with first created process
     if(newProcess->pid = 1)
     {
         runningProcess->state = READY;
@@ -501,7 +500,7 @@ void Send (int pid, char* msg)
     //cannot use "init" to send
     else if(runningProcess->pid == 0)
     {
-        printf("***init IS RUNNING, CANNOT SEND WITH init***");
+        printf("***init IS RUNNNING, CANNOT SEND WITH init***");
         return;
     }
 
@@ -562,19 +561,6 @@ void Send (int pid, char* msg)
             runningProcess->state = RUNNING;
 
             return;
-        }
-
-        if(runningProcess->priority == 0)
-        {   
-            successOrFailure = List_prepend(priorityQ0, runningProcess);
-        }
-        else if(runningProcess->priority == 1)
-        {  
-            successOrFailure = List_prepend(priorityQ1, runningProcess);
-        }
-        else if(runningProcess->priority == 2)
-        {
-            successOrFailure = List_prepend(priorityQ2, runningProcess);
         }
 
         //Check Q0
@@ -819,6 +805,18 @@ bool Reply (int pid, char* msg)
         temp->state = READY;
         strcpy(temp->message, msg); //STORE REPLY IN THE SENDER'S MESSAGE BUFFER, MIGHT CONSIDER ADD ANOTHER MESSAGE BUFFER FOR REPLY
 
+        if(temp->priority == 0)
+        {
+            List_prepend(priorityQ0, temp);
+        }
+        else if(temp->priority == 1)
+        {
+            List_prepend(priorityQ1, temp);
+        }
+        else if(temp->priority == 2)
+        {
+            List_prepend(priorityQ2, temp);
+        }
 
         //print the replier info and the reply message in sender's message buffer
         printf("***SUCCESSFULLY UNBLOCKED THE SENDER BY SENDING IT A REPLY***\n");
@@ -978,6 +976,8 @@ void Totalinfo (void)
     List_first(priorityQ0);
     List_first(priorityQ1);
     List_first(priorityQ2);
+    List_first(waitSendQ);
+    List_first(waitReceiveQ);
     while(List_curr(priorityQ0) != NULL){
         temp = (PCB*)List_curr(priorityQ0);
         printInfo(temp);
@@ -992,6 +992,16 @@ void Totalinfo (void)
         temp = (PCB*)List_curr(priorityQ2);
         printInfo(temp);
         List_next(priorityQ2);
+    }
+    while(List_curr(waitSendQ) != NULL){
+        temp = (PCB*)List_curr(waitSendQ);
+        printInfo(temp);
+        List_next(waitSendQ);
+    }
+    while(List_curr(waitReceiveQ) != NULL){
+        temp = (PCB*)List_curr(waitReceiveQ);
+        printInfo(temp);
+        List_next(waitReceiveQ);
     }
     printInfo(runningProcess);
     printInfo(init);
