@@ -9,6 +9,7 @@ List* waitReceiveQ;
 List* semaphoreList;
 
 int idNum = 1;
+bool exitProgram = false;
 
 PCB* init;
 PCB* runningProcess;
@@ -48,7 +49,7 @@ int Create (int priority)
     newProcess->priority = priority;
     newProcess->state = READY;
 
-    if(newProcess->pid = 1)
+    if(newProcess->pid == 1)
     {
         runningProcess->state = READY;
         runningProcess = newProcess;
@@ -302,6 +303,7 @@ bool Kill (int pid)
         {
             free(init);
             printf("***init IS KILLED, SIMULATION TERMINATED***");
+            exitProgram=true;
             return true;
         }
         else
@@ -798,11 +800,11 @@ bool Reply (int pid, char* msg)
     //check if the pid never did a send. Or if the replied sender is already unblocked and is inside the ready Q, update message
     if(List_search(priorityQ0, pidComparator, &pid))
     {
-        PCB* temp = (PCB*)List_curr(priorityQ0)
+        PCB* temp = (PCB*)List_curr(priorityQ0);
 
         if(strlen(temp->sendMessage) == 0)
         {
-            prinft("***ENTERED PID NEVER DID A SEND BEFORE***");
+            printf("***ENTERED PID NEVER DID A SEND BEFORE***");
             return false;
         }
 
@@ -812,11 +814,11 @@ bool Reply (int pid, char* msg)
     }
     else if(List_search(priorityQ1, pidComparator, &pid))
     {
-        PCB* temp = (PCB*)List_curr(priorityQ1)
+        PCB* temp = (PCB*)List_curr(priorityQ1);
 
         if(strlen(temp->sendMessage) == 0)
         {
-            prinft("***ENTERED PID NEVER DID A SEND BEFORE***");
+            printf("***ENTERED PID NEVER DID A SEND BEFORE***");
             return false;
         }
 
@@ -826,11 +828,11 @@ bool Reply (int pid, char* msg)
     }
     else if(List_search(priorityQ2, pidComparator, &pid))
     {
-        PCB* temp = (PCB*)List_curr(priorityQ2)
+        PCB* temp = (PCB*)List_curr(priorityQ2);
 
         if(strlen(temp->sendMessage) == 0)
         {
-            prinft("***ENTERED PID NEVER DID A SEND BEFORE***");
+            printf("***ENTERED PID NEVER DID A SEND BEFORE***");
             return false;
         }
 
@@ -972,7 +974,7 @@ void printInfo(PCB* process)
     printf("Priority: %d\n", process->priority);
     printf("State: %s\n", stateToString(process->state));
     printf("Message: %s\n", process->message);
-    printf("sendMessage: %s\n", process->sendMessage);
+    printf("sendMessage: %s\n\n", process->sendMessage);
 }
 
 void Procinfo (int pid)
@@ -1046,6 +1048,19 @@ void Totalinfo (void)
         printInfo(temp);
         List_next(waitReceiveQ);
     }
-    printInfo(runningProcess);
     printInfo(init);
+
+    printf("---RUNNNING PROCESS---\n");
+    printInfo(runningProcess);
+
+}
+
+bool checkInit (void)
+{
+    if(exitProgram)
+    {
+        return true;
+    }
+
+    return false;
 }

@@ -15,6 +15,17 @@ int main() {
     CreateInit();
     CreateQs();
 
+    printf("NOTE: ---Please enter one line commands, here are some formats--- \n");
+    printf("      Create:  C priority# (such as 'C 1')\n");
+    printf("      Kill:    K pid# (such as 'K 1')\n");
+    printf("      Send:    S pid# Message (such as 'S 1 check')\n");
+    printf("      Reply:   Y pid# Message (such as 'Y 1 check')\n");
+    printf("      New Sem: N semID# initalVal# (such as 'N 1 1')\n");
+    printf("      Sem P:   P semID# (such as 'P 1')\n");
+    printf("      Sem V:   V semID# (such as 'V 1')\n");
+    printf("      P info:  I pid# (such as 'P 1')\n");
+
+
     while(1){
         printf("\n$ ");
         fgets(input, sizeof(input), stdin);
@@ -48,6 +59,11 @@ int main() {
                 }
                 printf("PID to kill: %d\n", first_arg);
                 Kill(first_arg);
+
+                if(checkInit())
+                {
+                    return 1;
+                }
                 break;
 
             case 'E':

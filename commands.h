@@ -1,5 +1,6 @@
-#ifndef _COMMANDS_H
-#define _COMMANDS_H
+#ifndef COMMANDS_H
+#define COMMANDS_H
+
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,14 +17,9 @@ enum State {
 
 typedef struct PCB_s PCB;
 struct PCB_s {
-    int pid;
-    int sendPid;
     int pid; //Origianl PID
     int sendPid; //Receiver's PID
     int priority; //0,1,2
-    enum State state;
-    char message[BUFFER_SIZE];
-    char sendMessage[BUFFER_SIZE];
     enum State state; //Process state
     char message[BUFFER_SIZE]; //Received Message
     char sendMessage[BUFFER_SIZE]; //Sending Message
@@ -50,3 +46,7 @@ bool NewSemaphore (int semaphoreID, int init_val);
 bool SemaphoreP (int semaphoreID);
 bool SemaphoreV (int semaphoreID);
 void Procinfo (int pid);
+void Totalinfo (void);
+bool checkInit (void); //Help terminate program
+
+#endif
