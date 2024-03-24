@@ -64,11 +64,18 @@ int main() {
                 {
                     return 1;
                 }
+
                 break;
 
             case 'E':
                 printf("Exiting...\n");
                 Exit();
+
+                if(checkInit())
+                {
+                    return 1;
+                }
+
                 break;
             
             case 'Q':
