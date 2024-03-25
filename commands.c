@@ -43,9 +43,11 @@ void CreateQs()
 
 int Create (int priority)
 {
+        printf("test");
+
     PCB* newProcess = malloc(sizeof(PCB));
     newProcess->pid = idNum;
-    init->sendPid = -1;
+    newProcess->sendPid = -1;
     newProcess->priority = priority;
     newProcess->state = READY;
 
@@ -93,7 +95,7 @@ int Fork (void)
     //case for the "init" process ("init" would be the very first process, thus its pid is 0)
     if(runningProcess->pid == 0)
     {
-        printf("***FORK UNSUCCESSFUL, RUNNING PROCESS IS init***");
+        printf("***FORK UNSUCCESSFUL, RUNNING PROCESS IS init***\n");
         return 0;
     }
 
@@ -302,13 +304,13 @@ bool Kill (int pid)
         if(runningProcess->pid == 0 && List_count(priorityQ0) == 0 && List_count(priorityQ1) == 0 && List_count(priorityQ2) == 0)
         {
             free(init);
-            printf("***init IS KILLED, SIMULATION TERMINATED***");
+            printf("***init IS KILLED, SIMULATION TERMINATED***\n");
             exitProgram=true;
             return true;
         }
         else
         {
-            printf("***THERE ARE OTHER PROCESSES LEFT, KILL OF init UNSUCCESSFUL***");
+            printf("***THERE ARE OTHER PROCESSES LEFT, KILL OF init UNSUCCESSFUL***\n");
             return false;
         }
     }
@@ -484,25 +486,25 @@ void Send (int pid, char* msg)
     }
     else if(strlen(msg) > 40)
     {
-        printf("***SEND MESSAGE EXCEEDS MAXIMUM SIZE***");
+        printf("***SEND MESSAGE EXCEEDS MAXIMUM SIZE***\n");
         return;
     }
     //when there's already a process send message to the process with the pid in parameter
     else if(List_search(waitSendQ, sendPidComparator, &pid))
     {
-        printf("***A MESSAGE ALREADY SENT TO THE RECEIVER, PLEASE TRY AGAIN AFTER THAT MESSAGE HAS BEEN RECEIVED***");
+        printf("***A MESSAGE ALREADY SENT TO THE RECEIVER, PLEASE TRY AGAIN AFTER THAT MESSAGE HAS BEEN RECEIVED***\n");
         return;
     }
     //cannot send to "init", in order to prevent "init" from being blocked at receive
     else if(pid == 0)
     {
-        printf("***CANNOT SEND TO init***");
+        printf("***CANNOT SEND TO init***\n");
         return;
     }
     //cannot use "init" to send
     else if(runningProcess->pid == 0)
     {
-        printf("***init IS RUNNNING, CANNOT SEND WITH init***");
+        printf("***init IS RUNNNING, CANNOT SEND WITH init***\n");
         return;
     }
 
@@ -547,11 +549,11 @@ void Send (int pid, char* msg)
 
             if(successOrFailure == 0)
             {   
-                printf("***SUCCESSFULLY UNBLOCKED THE RECEIVER BY SENDING IT A MESSAGE***");
+                printf("***SUCCESSFULLY UNBLOCKED THE RECEIVER BY SENDING IT A MESSAGE***\n");
                 return;
             }
 
-            printf("***UNBLOCK RECEIVER UNSUCCESSFUL***");
+            printf("***UNBLOCK RECEIVER UNSUCCESSFUL***\n");
             return;
         }
 
@@ -661,7 +663,7 @@ void Receive (void)
     //prevent init being blocked by receive
     if(runningProcess->pid == 0)
     {
-        printf("***init IS RUNNING, CANNOT RECEIVE WITH init***");
+        printf("***init IS RUNNING, CANNOT RECEIVE WITH init***\n");
         return;
     }
 
@@ -788,12 +790,12 @@ bool Reply (int pid, char* msg)
 {
     if(msg == NULL)
     {
-        printf("***REPLY MSG IS NULL***");
+        printf("***REPLY MSG IS NULL***\n");
         return false;
     }
     else if(strlen(msg) > 40)
     {
-        printf("***REPLY MSG EXCEEDS MAXIMUM SIZE***");
+        printf("***REPLY MSG EXCEEDS MAXIMUM SIZE***\n");
         return false;
     }
 
@@ -804,7 +806,7 @@ bool Reply (int pid, char* msg)
 
         if(strlen(temp->sendMessage) == 0)
         {
-            printf("***ENTERED PID NEVER DID A SEND BEFORE***");
+            printf("***ENTERED PID NEVER DID A SEND BEFORE***\n");
             return false;
         }
 
@@ -832,7 +834,7 @@ bool Reply (int pid, char* msg)
 
         if(strlen(temp->sendMessage) == 0)
         {
-            printf("***ENTERED PID NEVER DID A SEND BEFORE***");
+            printf("***ENTERED PID NEVER DID A SEND BEFORE***\n");
             return false;
         }
 
@@ -871,7 +873,7 @@ bool Reply (int pid, char* msg)
 
     }
 
-    printf("***UNBLOCK SENDER UNSUCCESSFUL***");
+    printf("***UNBLOCK SENDER UNSUCCESSFUL***\n");
     return false;
 }
 

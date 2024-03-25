@@ -43,6 +43,12 @@ int main() {
                     printf("Invalid input format for command 'I'\n");
                     break;
                 }
+
+                if(first_arg>2 || first_arg<0)
+                {
+                    printf("Invalid priority, please choose between 0,1,2");
+                    break;
+                }
                 printf("Priority for Create: %d\n", first_arg);
                 Create(first_arg);
                 break;
